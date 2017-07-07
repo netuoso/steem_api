@@ -2,4 +2,22 @@
 
 require 'steem_api'
 
+puts "#"*40
+puts "#"*40
 puts "Welcome to SteemApi Version: #{SteemApi::VERSION}"
+puts "#"*40
+puts "#"*40
+puts ""
+
+case ARGV[0]
+when "rate"
+  puts "Current STEEM per MVESTS rate: #{SteemApi::Connection.steem_per_mvests}"
+else
+  STDOUT.puts <<~EOF
+    Please provide command name
+
+    Usage:
+      steem_api rate
+      steem_api help
+  EOF
+end
