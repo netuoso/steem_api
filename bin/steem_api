@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby
+
+require 'steem_api'
+
+puts "Welcome to SteemApi Version: #{SteemApi::VERSION}"
