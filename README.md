@@ -1,8 +1,10 @@
 # SteemApi
 
+[![Gem Version](https://badge.fury.io/rb/steem_api.svg)](https://badge.fury.io/rb/steem_api)
+
 ### How To Use (Rails 4+)
 - Add Gem to Gemfile
-	*	`gem 'steem_api', '~> 1.0'`
+	*	`gem 'steem_api', '~> 1.1'`
 - Bundle Install Gems
 	* `bundle install`
 
