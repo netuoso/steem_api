@@ -34,6 +34,10 @@ require "steem_api/models/tx/withdraw"
 require "steem_api/models/tx/withdraw_vesting_route"
 require "steem_api/models/tx/witness_update"
 
+require "steem_api/models/tx/custom/follow"
+require "steem_api/models/tx/custom/witness"
+require "steem_api/models/tx/custom/reblog"
+
 require "steem_api/models/vo/author_reward"
 require "steem_api/models/vo/curation_reward"
 require "steem_api/models/vo/fill_convert_request"

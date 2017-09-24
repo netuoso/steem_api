@@ -21,6 +21,24 @@
 - Token
 - Transaction
 
+### Followers
+
+How to query today's followers:
+
+```ruby
+followers = SteemApi::Tx::Custom::Follow
+followers.following(:ned).today.count
+```
+
+### Resteem
+
+How to query today's "resteems":
+
+```ruby
+reblogs = SteemApi::Tx::Custom::Reblog
+reblogs.author(:netuoso).today.count
+```
+
 ### How To Contribute
 - Fork this repo
 - Branch off Master and make your changes
