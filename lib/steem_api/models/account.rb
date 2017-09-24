@@ -3,6 +3,11 @@ module SteemApi
 
     self.table_name = :Accounts
 
+    scope :before, lambda { |before, field = 'created'| where("#{field} < ?", before) }
+    scope :after, lambda { |after, field = 'created'| where("#{field} > ?", after) }
+    scope :today, -> { after(1.day.ago) }
+    scope :yesterday, -> { before(1.day.ago).after(2.days.ago) }
+    
     def witness?
       self.witness_votes != "[]"
     end

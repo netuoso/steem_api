@@ -3,6 +3,11 @@ module SteemApi
 
   self.table_name = :Tokens
 
+  scope :before, lambda { |before, field = 'time'| where("#{field} < ?", before) }
+  scope :after, lambda { |after, field = 'time'| where("#{field} > ?", after) }
+  scope :today, -> { after(1.day.ago) }
+  scope :yesterday, -> { before(1.day.ago).after(2.days.ago) }
+  
   end
 end
 
