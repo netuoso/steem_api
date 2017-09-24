@@ -8,3 +8,7 @@ Rake::TestTask.new(:test) do |t|
 end
 
 task :default => :test
+
+task :console do
+  exec "irb -r steem_api -I ./lib"
+end
