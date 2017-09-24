@@ -2,6 +2,11 @@ module SteemApi
   class Comment < SteemApi::SqlBase
 
     self.table_name = :Comments
+    
+    scope :before, lambda { |before, field = 'created'| where("#{field} < ?", before) }
+    scope :after, lambda { |after, field = 'created'| where("#{field} > ?", after) }
+    scope :today, -> { after(1.day.ago) }
+    scope :yesterday, -> { before(1.day.ago).after(2.days.ago) }
 
     def self.find_by_author(user)
       self.where(author: user)
