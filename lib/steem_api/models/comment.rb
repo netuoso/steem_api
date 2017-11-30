@@ -7,7 +7,13 @@ module SteemApi
     scope :after, lambda { |after, field = 'created'| where("#{field} > ?", after) }
     scope :today, -> { after(1.day.ago) }
     scope :yesterday, -> { before(1.day.ago).after(2.days.ago) }
-
+    
+    scope :normalized_json, -> { where("json_metadata LIKE '{%}'") }
+    
+    scope :app, lambda { |app|
+      normalized_json.where("JSON_VALUE(json_metadata, '$.app') LIKE ?", "#{app}/%")
+    }
+    
     def self.find_by_author(user)
       self.where(author: user)
     end
