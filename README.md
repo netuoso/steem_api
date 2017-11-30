@@ -39,6 +39,23 @@ reblogs = SteemApi::Tx::Custom::Reblog
 reblogs.author(:netuoso).today.count
 ```
 
+### Account Witness Proxy
+
+How to query current accounts that are actively using a proxy:
+
+```ruby
+proxied = SteemApi::Tx::AccountWitnessProxy.active('netuoso')
+proxied.pluck(:account)
+```
+
+### Appiations
+
+How to query comments by application:
+
+```ruby
+comments = SteemApi::Comment.app('esteem').where(author: 'good-karma')
+```
+
 ### How To Contribute
 - Fork this repo
 - Branch off Master and make your changes
