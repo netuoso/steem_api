@@ -14,6 +14,26 @@ module SteemApi
       normalized_json.where("JSON_VALUE(json_metadata, '$.app') LIKE ?", "#{app}/%")
     }
     
+    scope :app_version, lambda { |version|
+      normalized_json.where("JSON_VALUE(json_metadata, '$.app') LIKE ?", "%/#{version}")
+    }
+    
+    scope :decorate_metadata, -> {
+      previous_select = if all.select_values.none?
+        Arel.star
+      else
+        all.select_values
+      end
+      
+      r = normalized_json.select(previous_select)
+      
+      %w(tags image links app format).each do |key|
+        r = r.select("JSON_VALUE(json_metadata, '$.#{key}') AS metadata_#{key}")
+      end
+      
+      r
+    }
+    
     def self.find_by_author(user)
       self.where(author: user)
     end
