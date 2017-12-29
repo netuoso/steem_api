@@ -27,6 +27,22 @@ module SteemApi
       scope :following, lambda { |following|
         blog.where("JSON_VALUE(json_metadata, '$[1].following') = ?", following)
       }
+      
+      scope :decorate_metadata, -> {
+        previous_select = if all.select_values.none?
+          Arel.star
+        else
+          all.select_values
+        end
+        
+        r = select(previous_select)
+        
+        %w(follower following what).each do |key|
+          r = r.select("JSON_VALUE(json_metadata, '$[1].#{key}') AS metadata_#{key}")
+        end
+        
+        r
+      }
     end
   end
 end

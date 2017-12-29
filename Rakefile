@@ -51,6 +51,17 @@ task :apps, [:app, :days_ago] do |t, args|
   ap comments.count(:all)
 end
 
+desc 'Do all crosschecks of given account.'
+task :crosscheck, [:account] do |t, args|
+  account = args[:account]
+    
+  Rake::Task["crosscheck:powerdowns"].invoke(account)
+  Rake::Task["crosscheck:powerups"].invoke(account)
+  Rake::Task["crosscheck:transfers"].invoke(account)
+  Rake::Task["crosscheck:vesting_from"].invoke(account)
+  Rake::Task["crosscheck:vesting_to"].invoke(account)
+end
+  
 namespace :crosscheck do
   desc 'List of accounts grouped by transfer count crosschecked by memo of given account.'
   task :transfers, [:account] do |t, args|
@@ -79,7 +90,7 @@ namespace :crosscheck do
       puts "No match."
     else
       from = transfers.pluck(:from).uniq.join(', ')
-      puts "Accounts grouped by transfer count using commom memos as #{from} on common exchanges ..."
+      puts "Accounts grouped by transfer count using common memos as #{from} on common exchanges ..."
       ap crosscheck_transfers.group(:from).order('count_all').count(:all)
     end
   end
