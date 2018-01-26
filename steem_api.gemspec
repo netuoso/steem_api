@@ -6,7 +6,7 @@ require 'steem_api/version'
 Gem::Specification.new do |spec|
   spec.name          = "steem_api"
   spec.version       = SteemApi::VERSION
-  spec.authors       = ["Andrew Chaney (netuoso)"]
+  spec.authors       = ["Andrew Chaney (netuoso)", 'Anthony Martin (inertia)']
   spec.email         = ["andrewc@pobox.com"]
 
   spec.summary       = %q{Ruby/Rails wrapper for SteemSQL.com}
