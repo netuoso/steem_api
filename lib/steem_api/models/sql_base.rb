@@ -5,9 +5,9 @@ module SteemApi
 
     establish_connection({
       adapter: "sqlserver",
-      host: "sql.steemsql.com",
-      username: "steemit",
-      password: "steemit",
+      host: ENV['STEEMSQL_HOST'] || 'sql.steemsql.com',
+      username: ENV['STEEMSQL_USERNAME'] || 'steemit',
+      password: ENV['STEEMSQL_PASSWORD'] || 'steemit',
       timeout: 60
     })
 
