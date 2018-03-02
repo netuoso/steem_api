@@ -286,3 +286,21 @@ end
 #   puts "Daily conversion requests failled sum grouped by date since #{after_timestamp} ..."
 #   ap converts.sum(:amount)
 # end
+
+desc 'Build a new version of the steem_api gem.'
+task :build do
+  exec 'gem build steem_api.gemspec'
+end
+
+desc 'Publish the current version of the steem_api gem.'
+task :push do
+  exec "gem push steem_api-#{SteemApi::VERSION}.gem"
+end
+
+# We're not going to yank on a regular basis, but this is how it's done if you
+# really want a task for that for some reason.
+
+# desc 'Yank the current version of the steem_api gem.'
+# task :yank do
+#   exec "gem yank steem_api -v #{SteemApi::VERSION}"
+# end
