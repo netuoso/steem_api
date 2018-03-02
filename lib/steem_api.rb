@@ -45,6 +45,7 @@ require "steem_api/models/vo/fill_order"
 require "steem_api/models/vo/fill_vesting_withdraw"
 require "steem_api/models/vo/interest"
 require "steem_api/models/vo/shutdown_witness"
+require "steem_api/models/vo/producer_reward"
 
 module SteemApi
 end
