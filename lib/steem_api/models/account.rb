@@ -11,7 +11,10 @@ module SteemApi
     def witness?
       self.witness_votes != "[]"
     end
-
+    
+    def proxied_vsf_votes_total
+      JSON[proxied_vsf_votes].map(&:to_i).sum
+    end
   end
 end
 
