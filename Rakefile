@@ -225,7 +225,7 @@ namespace :rewards do
     puts "Daily author reward #{symbol} sum grouped by date since #{after_timestamp} ..."
     
     case symbol
-    when 'SBD' then ap rewards.sum(:sdb_payout)
+    when 'SBD' then ap rewards.sum(:sbd_payout)
     when 'STEEM' then ap rewards.sum(:steem_payout)
     when 'VESTS' then ap rewards.sum(:vesting_payout)
     when 'MVESTS'

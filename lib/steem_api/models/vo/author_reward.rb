@@ -16,7 +16,7 @@ end
 #   timestamp: datetime,
 #   author: varchar,
 #   permlink: varchar,
-#   sdb_payout: money,
+#   sbd_payout: money,
 #   steem_payout: money,
 #   vesting_payout: money
 # )
