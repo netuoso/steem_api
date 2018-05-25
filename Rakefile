@@ -272,6 +272,42 @@ task :proxied, [:days_ago] do |t, args|
   ap proxied.count(:all)
 end
 
+desc 'Claimed Rewards'
+task :claimed, [:account_name, :days_ago, :symbol] do |t, args|
+  now = Time.now.utc
+  account_name = args[:account_name] || '%'
+  after_timestamp = now - ((args[:days_ago] || '30').to_i * 86400)
+  symbol = (args[:symbol] || :vests).to_sym
+  claims = SteemApi::Tx::ClaimRewardBalance.where('timestamp > ?', after_timestamp)
+
+  claims = if account_name =~ /%/
+    claims.where('account LIKE ?', account_name)
+  else
+    claims.where(account: account_name)
+  end
+  
+  claims = case symbol
+    when :vests then claims.where("reward_vests > 0")
+    when :mvests then claims.where("reward_vests > 0")
+    when :steem then claims.where("reward_steem > 0")
+    when :sbd then claims.where("reward_sbd > 0")
+  end
+    
+  claims = claims.group("FORMAT(timestamp, 'yyyy-MM')")
+  claims = claims.order('format_timestamp_yyyy_mm ASC')
+  
+  claims = case symbol
+    when :vests then claims.sum(:reward_vests)
+    when :mvests then claims.sum('reward_vests / 1000000')
+    when :steem then claims.sum(:reward_steem)
+    when :sbd then claims.sum(:reward_sbd)
+  end
+  
+  puts "Claimed rewards in #{symbol.to_s.upcase} sum grouped by month ..."
+
+  ap claims
+end
+
 # Doesn't look like this table exists.
 # desc 'List conversion SBD conversion request sums grouped by day.'
 # task :convert, [:days_ago] do |t, args|
