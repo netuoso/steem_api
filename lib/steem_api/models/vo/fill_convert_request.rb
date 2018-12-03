@@ -2,7 +2,7 @@ module SteemApi
   module Vo
     class FillConvertRequest < SteemApi::SqlBase
 
-      self.table_name = :VOFillConvertRequest
+      self.table_name = :VOFillConvertRequests
 
     end
   end

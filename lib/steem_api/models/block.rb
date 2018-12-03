@@ -11,9 +11,6 @@ end
 #
 # SteemApi::Block(
 #   block_num: integer,
-#   previous: varchar,
 #   timestamp: datetime,
-#   witness: varchar,
-#   witness_signature: varchar,
-#   transaction_merkle_root: varchar
+#   witness: varchar
 # )

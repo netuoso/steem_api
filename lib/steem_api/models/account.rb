@@ -2,14 +2,23 @@ module SteemApi
   class Account < SteemApi::SqlBase
 
     self.table_name = :Accounts
-
+    
+    has_many :follows, foreign_key: :follower, class_name: 'Follower', primary_key: :name
+    has_many :following, through: :follows, source: :following_account
+    has_many :inverse_follows, foreign_key: :following, class_name: 'Follower', primary_key: :name
+    has_many :followers, through: :inverse_follows, source: :follower_account
+    
+    has_many :reblogs, foreign_key: :account, class_name: 'Reblog', primary_key: :name
+    
+    belongs_to :witness, foreign_key: :name, primary_key: :name
+    
     scope :before, lambda { |before, field = 'created'| where("#{field} < ?", before) }
     scope :after, lambda { |after, field = 'created'| where("#{field} > ?", after) }
     scope :today, -> { after(1.day.ago) }
     scope :yesterday, -> { before(1.day.ago).after(2.days.ago) }
     
     def witness?
-      self.witness_votes != "[]"
+      !!witness
     end
     
     def proxied_vsf_votes_total

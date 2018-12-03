@@ -8,3 +8,5 @@
 /tmp/
 *.gem
 **/.DS_Store
+Gemfile.lock
+.rvmrc

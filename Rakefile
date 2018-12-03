@@ -15,6 +15,64 @@ task :console do
   exec "irb -r steem_api -I ./lib"
 end
 
+namespace :created do
+  desc 'Lists accounts created grouped by creator and date.'
+  task :accounts, [:creator, :days_ago] do |t, args|
+    now = Time.now.utc
+    creator = args[:creator]
+    after_timestamp = now - ((args[:days_ago] || '30').to_i * 86400)
+    
+    accounts = SteemApi::Tx::AccountCreate.all
+    
+    if !!creator || creator == '%'
+      unless creator == '%'
+        accounts = accounts.where(creator: creator)
+      end
+    elsif creator =~ /.*%.*/
+      accounts = accounts.where('creator LIKE ?', creator)
+    end
+    
+    accounts = accounts.where('timestamp > ?', after_timestamp)
+    accounts = accounts.group('CAST(timestamp AS DATE)', :creator)
+    accounts = accounts.order('cast_timestamp_as_date ASC')
+
+    accounts = accounts.count
+    ap "# Daily creation count by #{creator.nil? ? 'all account creators' : creator} since #{after_timestamp} ..."
+    ap accounts
+    ap "# Total accounts: #{accounts.values.sum}"
+  end
+  
+  desc 'Lists custom_json_operations grouped by id and date.'
+  task :custom_json, [:id, :days_ago, :min_count] do |t, args|
+    now = Time.now.utc
+    tid = args[:id]
+    after_timestamp = now - ((args[:days_ago] || '30').to_i * 86400)
+    min_count = (args[:min_count] || 1).to_i
+    
+    customs = SteemApi::Tx::Custom.all
+    
+    if !!tid && tid != '%' && tid =~ /.*%.*/
+      customs = customs.where("tid LIKE ?", tid)
+    elsif !!tid && tid != '%'
+      customs = customs.where(tid: tid)
+    end
+    
+    customs = customs.where('timestamp > ?', after_timestamp)
+    customs = customs.group('CAST(timestamp AS DATE)', :tid)
+    customs = customs.order('cast_timestamp_as_date ASC')
+
+    customs = customs.count
+    
+    customs = customs.map do |k, v|
+      [k, v] if v >= min_count
+    end.compact.to_h
+    
+    ap "# Daily creation count by #{tid.nil? ? 'all custom_json_operation' : tid} since #{after_timestamp} ..."
+    ap customs
+    ap "# Total custom_json_operation: #{customs.values.sum}"
+  end
+end
+
 desc 'Lists sum of transfers grouped by date, from, and to.'
 task :transfers, [:minimum_amount, :symbol, :days_ago] do |t, args|
   now = Time.now.utc
@@ -34,6 +92,78 @@ task :transfers, [:minimum_amount, :symbol, :days_ago] do |t, args|
   ap transfers.sum(:amount)
 end
 
+desc 'Lists sum of powered up grouped by date, from, and to.'
+task :powerup, [:minimum_amount, :symbol, :days_ago, :not_to_self] do |t, args|
+  now = Time.now.utc
+  minimum_amount = (args[:minimum_amount] || '500').to_f
+  symbol = (args[:symbol] || 'STEEM').upcase
+  after_timestamp = now - ((args[:days_ago] || '30').to_i * 86400)
+  not_to_self = (args[:not_to_self] || 'false') == 'true'
+  
+  minimum_amount = case symbol
+  when 'MVESTS' then minimum_amount * 1e6 #TODO
+  when 'VESTS' then minimum_amount # TODO
+  when 'STEEM' then minimum_amount
+  else; raise "Unknown symbol: #{symbol}"
+  end
+  
+  # Only type: transfer; ignore savings, vestings
+  transfers = SteemApi::Tx::Transfer.where(type: 'transfer_to_vesting')
+  transfers = transfers.where('amount > ?', minimum_amount)
+  transfers = transfers.where('amount_symbol = ?', 'STEEM')
+  transfers = transfers.where('timestamp > ?', after_timestamp)
+  transfers = transfers.group('CAST(timestamp AS DATE)', :from, :to)
+  transfers = transfers.order('cast_timestamp_as_date ASC')
+  
+  transfers = transfers.sum(:amount)
+  
+  if not_to_self
+    transfers = transfers.map do |k, v|
+      [k, v] if k[1] != k[2]
+    end.compact.to_h
+  end
+  
+  puts "# Daily transfer sum over #{'%.3f' % minimum_amount} #{symbol} #{not_to_self ? '' : 'not to self '}since #{after_timestamp} ..."
+  ap transfers
+  ap "# Total #{symbol}: #{transfers.values.sum}"
+end
+
+desc 'Lists sum of powered down grouped by date, from, and to.'
+task :powerdown, [:minimum_amount, :symbol, :days_ago, :not_to_self] do |t, args|
+  now = Time.now.utc
+  minimum_amount = (args[:minimum_amount] || '500').to_f
+  symbol = (args[:symbol] || 'STEEM').upcase
+  after_timestamp = now - ((args[:days_ago] || '30').to_i * 86400)
+  not_to_self = (args[:not_to_self] || 'false') == 'true'
+  
+  minimum_amount = case symbol
+  when 'MVESTS' then minimum_amount * 1e6 #TODO
+  when 'VESTS' then minimum_amount # TODO
+  when 'STEEM' then minimum_amount
+  else; raise "Unknown symbol: #{symbol}"
+  end
+  
+  # Only type: transfer; ignore savings, vestings
+  transfers = SteemApi::Tx::Transfer.where(type: 'transfer_to_vesting')
+  transfers = transfers.where('amount > ?', minimum_amount)
+  transfers = transfers.where('amount_symbol = ?', 'STEEM')
+  transfers = transfers.where('timestamp > ?', after_timestamp)
+  transfers = transfers.group('CAST(timestamp AS DATE)', :from, :to)
+  transfers = transfers.order('cast_timestamp_as_date ASC')
+  
+  transfers = transfers.sum(:amount)
+  
+  if not_to_self
+    transfers = transfers.map do |k, v|
+      [k, v] if k[1] != k[2]
+    end.compact.to_h
+  end
+  
+  puts "# Daily transfer sum over #{'%.3f' % minimum_amount} #{symbol} #{not_to_self ? '' : 'not to self '}since #{after_timestamp} ..."
+  ap transfers
+  ap "# Total #{symbol}: #{transfers.values.sum}"
+end
+
 desc 'Lists apps grouped by date, app/version.'
 task :apps, [:app, :days_ago] do |t, args|
   now = Time.now.utc
@@ -51,6 +181,35 @@ task :apps, [:app, :days_ago] do |t, args|
   ap comments.count(:all)
 end
 
+desc 'Lists app names grouped by date, app/version.'
+task :app_names, [:app, :days_ago] do |t, args|
+  now = Time.now.utc
+  app = args[:app]
+  after_timestamp = now - ((args[:days_ago] || '7').to_f * 86400)
+  
+  comments = SteemApi::Comment.normalized_json
+  comments = comments.app(app) if !!app
+  comments = comments.where('created > ?', after_timestamp)
+  comments = comments.group('CAST(created AS DATE)', "JSON_VALUE(json_metadata, '$.app')")
+  comments = comments.order('cast_created_as_date ASC')
+  
+  matching = " matching \"#{app}\"" if !!app
+  puts "# Daily app#{matching} count since #{after_timestamp} ..."
+  
+  app_names = {}
+  puts comments.to_sql
+  comments.count(:all).each do |k, v|
+    date, app = k
+    if !!app && app.include?('/')
+      name, version = app.split('/')
+      app_names[[date, name]] ||= 0.0
+      app_names[[date, name]] += v
+    end
+  end
+  
+  ap app_names
+end
+
 desc 'Do all crosschecks of given account.'
 task :crosscheck, [:account] do |t, args|
   account = args[:account]
@@ -65,7 +224,9 @@ end
 namespace :crosscheck do
   desc 'List of accounts grouped by transfer count crosschecked by memo of given account.'
   task :transfers, [:account] do |t, args|
-    exchanges = %w(bittrex poloniex openledger blocktrades)
+    exchanges = %w(bittrex poloniex openledger blocktrades deepcrypto8 gopax
+      binanceexchange teambitwala changelly hitbtc-exchange korbit roomofsatoshi
+      shapeshiftio)
     account = args[:account]
     
     if account.nil? || account == ''
@@ -77,7 +238,8 @@ namespace :crosscheck do
     end
     
     all = SteemApi::Tx::Transfer.where(type: 'transfer')
-    transfers = all.where(to: exchanges)
+    transfers = all.where.not(memo: '')
+    transfers = transfers.where(to: exchanges)
     transfers = if account =~ /%/
       table = SteemApi::Tx::Transfer.arel_table
       transfers.where(table[:from].matches(account))
@@ -277,7 +439,7 @@ task :claimed, [:account_name, :days_ago, :symbol] do |t, args|
   now = Time.now.utc
   account_name = args[:account_name] || '%'
   after_timestamp = now - ((args[:days_ago] || '30').to_i * 86400)
-  symbol = (args[:symbol] || :vests).to_sym
+  symbol = (args[:symbol] || 'vests').downcase.to_sym
   claims = SteemApi::Tx::ClaimRewardBalance.where('timestamp > ?', after_timestamp)
 
   claims = if account_name =~ /%/
@@ -291,6 +453,7 @@ task :claimed, [:account_name, :days_ago, :symbol] do |t, args|
     when :mvests then claims.where("reward_vests > 0")
     when :steem then claims.where("reward_steem > 0")
     when :sbd then claims.where("reward_sbd > 0")
+    else; raise "Unknown symbol: #{symbol}"
   end
     
   claims = claims.group("FORMAT(timestamp, 'yyyy-MM')")
@@ -303,9 +466,10 @@ task :claimed, [:account_name, :days_ago, :symbol] do |t, args|
     when :sbd then claims.sum(:reward_sbd)
   end
   
-  puts "Claimed rewards in #{symbol.to_s.upcase} sum grouped by month ..."
+  puts "# Claimed rewards in #{symbol.to_s.upcase} sum grouped by month ..."
 
   ap claims
+  ap "# Total claimed #{symbol}: #{claims.values.sum}"
 end
 
 # Doesn't look like this table exists.
