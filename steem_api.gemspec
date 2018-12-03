@@ -26,5 +26,6 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "activerecord", [">= 4", "< 6"]
   spec.add_runtime_dependency "tiny_tds", ["~> 2.1"]
   spec.add_runtime_dependency "activerecord-sqlserver-adapter", [">= 4", "< 6"]
+  spec.add_runtime_dependency "activesupport", [">= 4", "< 6"]
   spec.add_runtime_dependency 'awesome_print', '~> 1.7', '>= 1.7.0'
 end
