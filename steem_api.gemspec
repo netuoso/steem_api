@@ -21,6 +21,14 @@ Gem::Specification.new do |spec|
   spec.executables   = "steem_api"
   spec.require_paths = ["lib"]
 
+  spec.add_development_dependency 'bundler', '~> 2.0', '>= 2.0.1'
+  spec.add_development_dependency 'rake', '~> 12.1', '>= 12.1.0'
+  spec.add_development_dependency 'minitest-proveit', '~> 1.0', '>= 1.0.0'
+  spec.add_development_dependency 'minitest', '~> 5.10', '>= 5.10.3'
+  spec.add_development_dependency 'minitest-line', '~> 0.6', '>= 0.6.4'
+  spec.add_development_dependency 'simplecov', '~> 0.11', '>= 0.11.2'
+  spec.add_development_dependency 'yard', '~> 0.9', '>= 0.9.16'
+
   spec.add_runtime_dependency "nokogiri", ["~> 1.8"]
   spec.add_runtime_dependency "rest-client", ["~> 2.0"]
   spec.add_runtime_dependency "activerecord", [">= 4", "< 6"]
