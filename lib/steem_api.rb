@@ -1,3 +1,5 @@
+require 'rubygems'
+require 'bundler/setup'
 require "steem_api/version"
 
 # Top Level Models
@@ -16,6 +18,7 @@ require "steem_api/models/witness"
 # Sub Level Models
 require "steem_api/models/tx/account_create"
 require "steem_api/models/tx/account_recover"
+require "steem_api/models/tx/account_update"
 require "steem_api/models/tx/account_witness_proxy"
 require "steem_api/models/tx/account_witness_vote"
 require "steem_api/models/tx/claim_reward_balance"

@@ -3,6 +3,8 @@ module SteemApi
 
     self.table_name = :Blocks
     self.primary_key = :block_num
+    
+    has_many :transactions, foreign_key: :block_num
 
   end
 end

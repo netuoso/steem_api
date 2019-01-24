@@ -1,7 +1,9 @@
 module SteemApi
   module Tx
     class AccountWitnessVote < SteemApi::SqlBase
-
+      belongs_to :account_record, foreign_key: :account, primary_key: :name, class_name: 'SteemApi::Account'
+      belongs_to :witness_record, foreign_key: :witness, primary_key: :name, class_name: 'SteemApi::Account'
+      
       self.table_name = :TxAccountWitnessVotes
 
     end

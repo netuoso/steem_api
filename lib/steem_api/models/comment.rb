@@ -34,12 +34,20 @@ module SteemApi
       r
     }
     
+    scope :beneficiaries, lambda { |account|
+      where("JSON_VALUE(beneficiaries, '$.account') IN(?)", [account].flatten)
+    }
+    
     def self.find_by_author(user)
       self.where(author: user)
     end
 
     def self.find_by_parent(user)
       self.where(parent_author: user)
+    end
+    
+    def beneficiaries
+      JSON[self[:beneficiaries]]
     end
 
   end

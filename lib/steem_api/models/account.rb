@@ -17,6 +17,8 @@ module SteemApi
     scope :today, -> { after(1.day.ago) }
     scope :yesterday, -> { before(1.day.ago).after(2.days.ago) }
     
+    scope :mined, lambda { |mined = true| where(mined: mined) }
+    
     def witness?
       !!witness
     end
