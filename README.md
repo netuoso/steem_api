@@ -12,6 +12,20 @@
 
 As of 2018-01-23, [SteemSQL is moving to a monthly subscription model](https://steemit.com/steemsql/@arcange/steemsql-is-moving-to-a-monthly-subscription-model).  To use this gem, you must subscribe to @steemsql and store the credentials as environment variables.
 
+### Prerequeisits
+
+#### Linux
+
+```bash
+apt-get update && apt-get install -yq freetds-dev freetds-bin
+```
+
+#### macOS
+
+```bash
+brew install freetds
+```
+
 ### How To Use (Standalone)
 - `gem install steem_api`
 - export STEEMSQL_HOST=<your steemsql host>
