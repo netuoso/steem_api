@@ -1,3 +1,3 @@
 module SteemApi
-  VERSION = '1.1.2pre3'
+  VERSION = '1.1.2'
 end
