@@ -4,9 +4,14 @@ require 'steem_api'
 require 'awesome_print'
 
 Rake::TestTask.new(:test) do |t|
-  t.libs << "test"
-  t.libs << "lib"
+  t.libs << 'test'
+  t.libs << 'lib'
   t.test_files = FileList['test/**/*_test.rb']
+  t.ruby_opts << if ENV['HELL_ENABLED']
+    '-W2'
+  else
+    '-W1'
+  end
 end
 
 task :default => :test
@@ -37,9 +42,9 @@ namespace :created do
     accounts = accounts.order('cast_timestamp_as_date ASC')
 
     accounts = accounts.count
-    ap "# Daily creation count by #{creator.nil? ? 'all account creators' : creator} since #{after_timestamp} ..."
+    puts "# Daily creation count by #{creator.nil? ? 'all account creators' : creator} since #{after_timestamp} ..."
     ap accounts
-    ap "# Total accounts: #{accounts.values.sum}"
+    puts "# Total accounts: #{accounts.values.sum}"
   end
   
   desc 'Lists custom_json_operations grouped by id and date.'
@@ -67,9 +72,9 @@ namespace :created do
       [k, v] if v >= min_count
     end.compact.to_h
     
-    ap "# Daily creation count by #{tid.nil? ? 'all custom_json_operation' : tid} since #{after_timestamp} ..."
+    puts "# Daily creation count by #{tid.nil? ? 'all custom_json_operation' : tid} since #{after_timestamp} ..."
     ap customs
-    ap "# Total custom_json_operation: #{customs.values.sum}"
+    puts "# Total custom_json_operation: #{customs.values.sum}"
   end
 end
 
@@ -125,7 +130,7 @@ task :powerup, [:minimum_amount, :symbol, :days_ago, :not_to_self] do |t, args|
   
   puts "# Daily transfer sum over #{'%.3f' % minimum_amount} #{symbol} #{not_to_self ? '' : 'not to self '}since #{after_timestamp} ..."
   ap transfers
-  ap "# Total #{symbol}: #{transfers.values.sum}"
+  puts "# Total #{symbol}: #{transfers.values.sum}"
 end
 
 desc 'Lists sum of powered down grouped by date, from, and to.'
@@ -161,7 +166,7 @@ task :powerdown, [:minimum_amount, :symbol, :days_ago, :not_to_self] do |t, args
   
   puts "# Daily transfer sum over #{'%.3f' % minimum_amount} #{symbol} #{not_to_self ? '' : 'not to self '}since #{after_timestamp} ..."
   ap transfers
-  ap "# Total #{symbol}: #{transfers.values.sum}"
+  puts "# Total #{symbol}: #{transfers.values.sum}"
 end
 
 desc 'Lists apps grouped by date, app/version.'
@@ -197,7 +202,7 @@ task :app_names, [:app, :days_ago] do |t, args|
   puts "# Daily app#{matching} count since #{after_timestamp} ..."
   
   app_names = {}
-  puts comments.to_sql
+  
   comments.count(:all).each do |k, v|
     date, app = k
     if !!app && app.include?('/')
@@ -374,26 +379,41 @@ end
 
 namespace :rewards do
   desc 'Lists author rewards grouped by date.'
-  task :author, [:symbol, :days_ago] do |t, args|
+  task :author, [:symbol, :days_ago, :author] do |t, args|
     now = Time.now.utc
     symbol = (args[:symbol] || 'SBD').upcase
     after_timestamp = now - ((args[:days_ago] || '7').to_i * 86400)
+    author = args[:author]
     
     rewards = SteemApi::Vo::AuthorReward
     rewards = rewards.where('timestamp > ?', after_timestamp)
     rewards = rewards.group('CAST(timestamp AS DATE)')
     rewards = rewards.order('cast_timestamp_as_date ASC')
     
-    puts "Daily author reward #{symbol} sum grouped by date since #{after_timestamp} ..."
+    if !!author
+      if author =~ /%/
+        rewards = rewards.where("author LIKE ?", author)
+      else
+        rewards = rewards.where(author: author)
+      end
+      
+      puts "Daily #{author} reward #{symbol} sum grouped by date since #{after_timestamp} ..."
+    else
+      puts "Daily reward #{symbol} sum grouped by date since #{after_timestamp} ..."
+    end
     
-    case symbol
-    when 'SBD' then ap rewards.sum(:sbd_payout)
-    when 'STEEM' then ap rewards.sum(:steem_payout)
-    when 'VESTS' then ap rewards.sum(:vesting_payout)
+    rewards = case symbol
+    when 'SBD' then rewards.sum(:sbd_payout)
+    when 'STEEM' then rewards.sum(:steem_payout)
+    when 'VESTS' then rewards.sum(:vesting_payout)
     when 'MVESTS'
-      ap rewards.sum('vesting_payout / 1000000')
+      rewards.sum('vesting_payout / 1000000')
     else; puts "Unknown symbol: #{symbol}.  Symbols supported: SBD, STEEM, VESTS, MVESTS"
     end
+    
+    ap rewards
+    sum = rewards.values.sum
+    puts "# Total rewards: %.3f %s (average: %.3f per day)" % [sum, symbol, (sum / rewards.size)]
   end
 
   desc 'Lists curation rewards grouped by date.'
@@ -469,7 +489,7 @@ task :claimed, [:account_name, :days_ago, :symbol] do |t, args|
   puts "# Claimed rewards in #{symbol.to_s.upcase} sum grouped by month ..."
 
   ap claims
-  ap "# Total claimed #{symbol}: #{claims.values.sum}"
+  puts "# Total claimed #{symbol}: #{claims.values.sum}"
 end
 
 # Doesn't look like this table exists.
