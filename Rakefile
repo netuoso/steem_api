@@ -492,6 +492,18 @@ task :claimed, [:account_name, :days_ago, :symbol] do |t, args|
   puts "# Total claimed #{symbol}: #{claims.values.sum}"
 end
 
+task :balance, [:party_a, :party_b, :symbol] do |t, args|
+  party_a = args[:party_a]
+  party_b = args[:party_b]
+  symbol = args[:symbol].upcase
+  
+  balance_a = SteemApi::Tx::Transfer.where(to: party_a, from: party_b, amount_symbol: symbol).sum(:amount).to_f
+  balance_b = SteemApi::Tx::Transfer.where(to: party_b, from: party_a, amount_symbol: symbol).sum(:amount).to_f
+  
+  puts "#{party_a}: %.3f #{symbol}, difference: %.3f #{symbol}" % [balance_a, (balance_a - balance_b)]
+  puts "#{party_b}: %.3f #{symbol}, difference: %.3f #{symbol}" % [balance_b, (balance_b - balance_a)]
+end
+
 # Doesn't look like this table exists.
 # desc 'List conversion SBD conversion request sums grouped by day.'
 # task :convert, [:days_ago] do |t, args|
