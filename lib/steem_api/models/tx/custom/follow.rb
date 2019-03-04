@@ -18,7 +18,7 @@ module SteemApi
       
       scope :blog, -> { mode('blog') }
       scope :ignore, -> { mode('ignore') }
-      scope :reset, -> { mode('') }
+      scope :clear, -> { mode('') }
       
       scope :follower, lambda { |follower|
         blog.where("JSON_VALUE(json_metadata, '$[1].follower') = ?", follower)
