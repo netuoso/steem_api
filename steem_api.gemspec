@@ -28,6 +28,8 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'minitest-line', '~> 0.6', '>= 0.6.4'
   spec.add_development_dependency 'simplecov', '~> 0.11', '>= 0.11.2'
   spec.add_development_dependency 'yard', '~> 0.9', '>= 0.9.16'
+  spec.add_development_dependency 'rb-readline', '~> 0.5', '>= 0.5.5'
+  spec.add_development_dependency 'irb', '~> 1.0', '>= 1.0.0'
 
   spec.add_runtime_dependency "nokogiri", ["~> 1.8"]
   spec.add_runtime_dependency "rest-client", ["~> 2.0"]
