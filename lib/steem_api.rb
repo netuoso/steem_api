@@ -36,6 +36,7 @@ require "steem_api/models/tx/feed"
 require "steem_api/models/tx/limit_order"
 require "steem_api/models/tx/pow"
 require "steem_api/models/tx/transfer"
+require "steem_api/models/tx/update_proposal_vote"
 require "steem_api/models/tx/vote"
 require "steem_api/models/tx/withdraw"
 require "steem_api/models/tx/withdraw_vesting_route"
@@ -57,6 +58,8 @@ require "steem_api/models/vo/liquidity_reward"
 require "steem_api/models/vo/producer_reward"
 require "steem_api/models/vo/return_vesting_delegation"
 require "steem_api/models/vo/shutdown_witness"
+require "steem_api/models/vo/sps_fund"
+require "steem_api/models/vo/proposal_pay"
 
 module SteemApi
 end
