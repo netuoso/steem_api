@@ -8,7 +8,7 @@ module SteemApi
     scope :today, -> { after(1.day.ago) }
     scope :yesterday, -> { before(1.day.ago).after(2.days.ago) }
     
-    scope :normalized_json, -> { where("json_metadata LIKE '{%}'") }
+    scope :normalized_json, -> { where("json_metadata LIKE '{%}' AND ISJSON(json_metadata) > 0") }
     
     scope :app, lambda { |app|
       normalized_json.where("JSON_VALUE(json_metadata, '$.app') LIKE ?", "#{app}/%")
@@ -16,6 +16,10 @@ module SteemApi
     
     scope :app_version, lambda { |version|
       normalized_json.where("JSON_VALUE(json_metadata, '$.app') LIKE ?", "%/#{version}")
+    }
+    
+    scope :tagged, lambda { |tag|
+      normalized_json.where("? IN (SELECT value FROM OPENJSON(json_metadata,'$.tags'))", tag)
     }
     
     scope :decorate_metadata, -> {
