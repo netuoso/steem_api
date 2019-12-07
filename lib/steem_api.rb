@@ -45,6 +45,7 @@ require "steem_api/models/tx/witness_update"
 require "steem_api/models/tx/custom/follow"
 require "steem_api/models/tx/custom/witness"
 require "steem_api/models/tx/custom/reblog"
+require "steem_api/models/tx/custom/community"
 
 require "steem_api/models/vo/author_reward"
 require "steem_api/models/vo/comment_benefactor_reward"
@@ -62,6 +63,12 @@ require "steem_api/models/vo/sps_fund"
 require "steem_api/models/vo/proposal_pay"
 
 module SteemApi
+end
+
+module SteemSQL
+  # Initial deprecation of SteemApi module in favor of SteemSQL.
+  
+  include SteemApi
 end
 
 # Monkeypatch to implement: https://github.com/rails-sqlserver/activerecord-sqlserver-adapter/issues/274#issuecomment-167578393
