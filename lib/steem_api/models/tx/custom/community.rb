@@ -11,7 +11,7 @@ module SteemApi
       scope :nsfw, lambda { |nsfw = true| normalized_json.where("JSON_VALUE(json_metadata, '$[1].is_nsfw') = ?", nsfw) }
       scope :account, lambda { |account|
         account = [account].flatten
-        normalized_json.where("required_auths IN(?) OR required_posting_auths IN(?) OR JSON_VALUE(json_metadata, '$[1].account') IN(?)", account, account, account)
+        normalized_json.where("required_auth IN(?) OR required_posting_auth IN(?) OR JSON_VALUE(json_metadata, '$[1].account') IN(?)", account, account, account)
       }
       scope :permlink, lambda { |permlink|
         normalized_json.where("JSON_VALUE(json_metadata, '$[1].permlink') = ?", permlink)
