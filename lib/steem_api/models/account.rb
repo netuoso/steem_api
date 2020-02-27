@@ -12,12 +12,33 @@ module SteemApi
     
     belongs_to :witness, foreign_key: :name, primary_key: :name
     
+    has_many :roles, foreign_key: :account, class_name: 'SteemApi::CommunityRole', primary_key: :name
+    has_many :guest_roles, -> { guests }, foreign_key: :account, class_name: 'SteemApi::CommunityRole', primary_key: :name
+    has_many :member_roles, -> { members }, foreign_key: :account, class_name: 'SteemApi::CommunityRole', primary_key: :name
+    has_many :mod_roles, -> { mods }, foreign_key: :account, class_name: 'SteemApi::CommunityRole', primary_key: :name
+    has_many :admin_roles, -> { admins }, foreign_key: :account, class_name: 'SteemApi::CommunityRole', primary_key: :name
+    has_many :muted_roles, -> { muted }, foreign_key: :account, class_name: 'SteemApi::CommunityRole', primary_key: :name
+    
+    has_many :communities, through: :roles, source: :community_record
+    has_many :guest_communities, through: :guest_roles, source: :community_record
+    has_many :member_communities, through: :member_roles, source: :community_record
+    has_many :mod_communities, through: :mod_roles, source: :community_record
+    has_many :admin_communities, through: :admin_roles, source: :community_record
+    has_many :muted_communities, through: :muted_roles, source: :community_record
+    
+    has_many :subscriptions, foreign_key: :subscriber, class_name: 'SteemApi::CommunitySubscriber', primary_key: :name
+    has_many :subscribed_communities, through: :subscriptions, source: :community_record
+    
     scope :before, lambda { |before, field = 'created'| where("#{field} < ?", before) }
     scope :after, lambda { |after, field = 'created'| where("#{field} > ?", after) }
     scope :today, -> { after(1.day.ago) }
     scope :yesterday, -> { before(1.day.ago).after(2.days.ago) }
     
     scope :mined, lambda { |mined = true| where(mined: mined) }
+    
+    def all_communities
+      SteemApi::Community.where('name IN(?) OR name IN(?)', roles.select(:community), subscriptions.select(:community))
+    end
     
     def witness?
       !!witness

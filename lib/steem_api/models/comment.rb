@@ -3,6 +3,19 @@ module SteemApi
 
     self.table_name = :Comments
     
+    belongs_to :author_record, foreign_key: :author, class_name: 'SteemApi::Account', primary_key: :name
+    belongs_to :community_record, foreign_key: :category, class_name: 'SteemApi::Community', primary_key: :name
+    
+    scope :depth, lambda { |depth| where(depth: depth) }
+    
+    scope :community, lambda { |community|
+      case community
+      when String then where(category: community)
+      else
+        where(category: community.name)
+      end
+    }
+    
     scope :before, lambda { |before, field = 'created'| where("#{field} < ?", before) }
     scope :after, lambda { |after, field = 'created'| where("#{field} > ?", after) }
     scope :today, -> { after(1.day.ago) }
@@ -18,8 +31,8 @@ module SteemApi
       normalized_json.where("JSON_VALUE(json_metadata, '$.app') LIKE ?", "%/#{version}")
     }
     
-    scope :tagged, lambda { |tag|
-      normalized_json.where("? IN (SELECT value FROM OPENJSON(json_metadata,'$.tags'))", tag)
+    scope :community, lambda {|community| joins(:community_record).where(category: community)}
+    scope :author, lambda {|author| joins(:author_record).where(author: author)}
     }
     
     scope :decorate_metadata, -> {
