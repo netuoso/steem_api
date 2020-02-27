@@ -3,6 +3,8 @@ module SteemApi
 
     self.table_name = :Comments
     
+    has_many :tags, foreign_key: 'comment_ID'
+    
     belongs_to :author_record, foreign_key: :author, class_name: 'SteemApi::Account', primary_key: :name
     belongs_to :community_record, foreign_key: :category, class_name: 'SteemApi::Community', primary_key: :name
     
@@ -33,6 +35,15 @@ module SteemApi
     
     scope :community, lambda {|community| joins(:community_record).where(category: community)}
     scope :author, lambda {|author| joins(:author_record).where(author: author)}
+    
+    scope :tagged, lambda { |tag, options = {exclude_category: false}|
+      exclude_category = !!options[:exclude_category]
+      
+      if exclude_category
+        where(id: SteemSQL::Tag.where(tag: tag).select(:comment_ID))
+      else
+        where("ID IN(?) OR category = ?", SteemSQL::Tag.where(tag: tag).select(:comment_ID), tag)
+      end
     }
     
     scope :decorate_metadata, -> {
@@ -55,18 +66,25 @@ module SteemApi
       where("JSON_VALUE(beneficiaries, '$.account') IN(?)", [account].flatten)
     }
     
-    def self.find_by_author(user)
-      self.where(author: user)
+    def self.find_by_author(author)
+      where(author: author).first
     end
 
-    def self.find_by_parent(user)
-      self.where(parent_author: user)
+    def self.find_by_parent(parent_author)
+      where(parent_author: parent_author).first
+    end
+    
+    def self.find_by_author_and_permlink(author, permlink)
+      where(author: author, permlink: permlink).first
     end
     
     def beneficiaries
       JSON[self[:beneficiaries]]
     end
 
+    def tag_names
+      tags.pluck(:tag)
+    end
   end
 end
 
